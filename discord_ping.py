@@ -5,7 +5,9 @@ import keywords as k
 from datetime import time
 from datetime import datetime
 
+
 requests.packages.urllib3.disable_warnings()
+
 
 TOKEN = 'NTEzNTI2NTE4NTE3ODU4MzE1.DtJT8A.2Z4SK1w2y8LP4-Nu_W6-OGwCDuc' #SET YOUR BOT TOKEN HERE 
 
@@ -17,10 +19,10 @@ posted_channels = dict()
 def channel_check(channel, keyword, sub_key):
     ''' Check if the channel already exists in the dictionary '''
     if channel in posted_channels:
-        posted_channels[channel]
         ch_values = posted_channels[channel]
 
-        for item in ch_values:
+        for index, item in enumerate(ch_values):
+            print(item)
             ''' Retrieve stored time '''
             prev_time = item[0]
             ''' Retrieve current time '''
@@ -28,23 +30,24 @@ def channel_check(channel, keyword, sub_key):
             ''' Format the time and get the difference between the current and previous time '''
             fmt = "%H:%M:%S"
             diff = datetime.strptime(str(curr_time), fmt) - datetime.strptime(str(prev_time), fmt)
-
-            ''' If its been longer than a minute '''
-            if (str(diff) >= "0:01:00"):
-                ''' Means its okay to post again '''
-                return False
-            else:
-                if keyword == item[1] and sub_key == item[2]:
+            
+            if keyword == item[1] and sub_key == item[2]:
+                ''' If its been longer than a minute '''
+                if (str(diff) >= "0:01:00"):
+                    ''' Means its okay to post again '''
+                    del posted_channels[channel][index]
+                    return False
+                else:
                     ''' It hasnt been 1 minute and keyword and sub keyword were already pinged '''
                     return True
-                else:
-                    return False
+            else:
+                print("Keyword and sub_key not in this item")
+                continue
     else:
         posted_channels[channel] = []
         return False
-
-    print(str(diff))
-    return True
+    
+    return False
 
 @client.event
 async def on_message(message):
@@ -72,5 +75,3 @@ async def on_ready():
 
 while True:
     client.run(TOKEN)
-
-
